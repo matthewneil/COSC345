@@ -25,10 +25,21 @@ int main(int argc, char **argv)
 
     //int obx = 200;
     int oby = 810;
+    int speed = 2;
+
+    int points = 0;
+    int counted1 = 0;
+    int counted2 = 0;
+
+    int ob2y = 1110;
 
     int obx = (rand() % 320)+200;
     int ob2x = (rand() % 350)+200;
     int ob3x = (rand() % 300)+200;
+
+    int ob4x = (rand() % 320)+200;
+    int ob5x = (rand() % 350)+200;
+    int ob6x = (rand() % 300)+200;
 
     bool running = true;
 
@@ -59,7 +70,22 @@ int main(int argc, char **argv)
             break;
         }
 
-        oby -= 5;
+        oby -= speed;
+        ob2y -= speed;
+        if((oby <= y-5 && counted1 == 0)){
+            counted1 = 1;
+            points++;
+            if(points % 5 == 0){
+                speed++;
+            }
+        }
+        if((ob2y <= y-5 && counted2 == 0)){
+            counted2 = 1;
+            points++;
+            if(points % 5 == 0){
+                speed++;
+            }
+        }
         //ob2y -= 0.1;
         //ob3y -= 0.1;
         if(oby < -50){
@@ -67,6 +93,14 @@ int main(int argc, char **argv)
             ob2x = (rand() % 350)+200;
             ob3x = (rand() % 300)+200;
             oby = 600;
+            counted1 = 0;
+        }
+        if(ob2y < -50){
+            ob4x = (rand() % 320)+200;
+            ob5x = (rand() % 350)+200;
+            ob6x = (rand() % 300)+200;
+            ob2y = 600;
+            counted2 = 0;
         }
         /*
         if(ob2y < -50){
@@ -91,6 +125,23 @@ int main(int argc, char **argv)
 
         if(x + 20 >= ob3x && x <= ob3x + 100){
             if(oby + 50 >= y && oby <= y+50){
+               break;
+            }
+        }
+
+        if(x + 20 >= ob4x && x <= ob4x + 70){
+            if(ob2y + 50 >= y && ob2y <= y+50){
+               break;
+            }
+        }
+        if(x + 20 >= ob5x && x <= ob5x + 50){
+            if(ob2y + 50 >= y && ob2y <= y+50){
+               break;
+            }
+        }
+
+        if(x + 20 >= ob6x && x <= ob6x + 100){
+            if(ob2y + 50 >= y && ob2y <= y+50){
                break;
             }
         }
@@ -127,8 +178,21 @@ int main(int argc, char **argv)
         SDL_Rect rect4 = {ob3x, oby, 100, 50};
         SDL_RenderFillRect(renderer, &rect4);
 
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_Rect rect5 = {ob4x, ob2y, 70, 50};
+        SDL_RenderFillRect(renderer, &rect5);
+
+        SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
+        SDL_Rect rect6 = {ob5x, ob2y, 50, 50};
+        SDL_RenderFillRect(renderer, &rect6);
+
+        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
+        SDL_Rect rect7 = {ob6x, ob2y, 100, 50};
+        SDL_RenderFillRect(renderer, &rect7);
+
         // Show what was drawn
         SDL_RenderPresent(renderer);
+        printf("%d\n", points);
     }
 
     // Release resources
