@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 
     //int obx = 200;
     int oby = 810;
-    int speed = 2;
+    int speed = 3;
 
     int points = 0;
     int counted1 = 0;
@@ -42,28 +42,58 @@ int main(int argc, char **argv)
     int ob6x = (rand() % 300)+200;
 
     bool running = true;
-
+    bool move_left = false;
+    bool move_right = false;
+    bool move_up = false;
+    bool move_down = false;
     SDL_Event event;
     while(running){
+
         // Process events
         while(SDL_PollEvent(&event)){
             if(event.type == SDL_QUIT){
                 running = false;
             }
-            if(event.type == SDL_KEYDOWN){
+            if(event.type == SDL_KEYUP){
                 if(event.key.keysym.sym == SDLK_RIGHT){
-                    x += 10;
+                    move_right = false;
                 }
                 if(event.key.keysym.sym == SDLK_LEFT){
-                    x -= 10;
+                    move_left = false;
                 }
                 if(event.key.keysym.sym == SDLK_DOWN){
-                    y += 10;
+                    move_down = false;
                 }
                 if(event.key.keysym.sym == SDLK_UP){
-                    y -= 10;
+                    move_up = false;
                 }
             }
+            if(event.type == SDL_KEYDOWN){
+                if(event.key.keysym.sym == SDLK_RIGHT){
+                    move_right = true;
+                }
+                if(event.key.keysym.sym == SDLK_LEFT){
+                    move_left = true;
+                }
+                if(event.key.keysym.sym == SDLK_DOWN){
+                    move_down = true;
+                }
+                if(event.key.keysym.sym == SDLK_UP){
+                    move_up = true;
+                }
+            }
+        }
+        if(move_left){
+            x -= 5;
+        }
+        if(move_right){
+            x += 5;
+        }
+        if(move_up){
+            y -= 5;
+        }
+        if(move_down){
+            y += 5;
         }
 
         if(x < wallWidth || x > width - wallWidth - 20){
@@ -75,14 +105,16 @@ int main(int argc, char **argv)
         if((oby <= y-5 && counted1 == 0)){
             counted1 = 1;
             points++;
-            if(points % 5 == 0){
+            printf("%d\n", points);
+            if(points % 10 == 0){
                 speed++;
             }
         }
         if((ob2y <= y-5 && counted2 == 0)){
             counted2 = 1;
             points++;
-            if(points % 5 == 0){
+            printf("%d\n", points);
+            if(points % 10 == 0){
                 speed++;
             }
         }
@@ -192,7 +224,8 @@ int main(int argc, char **argv)
 
         // Show what was drawn
         SDL_RenderPresent(renderer);
-        printf("%d\n", points);
+
+
     }
 
     // Release resources
