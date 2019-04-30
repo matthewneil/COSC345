@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
+#include <SDL_ttf.h>
 #include <SDL2/SDL.h>
+
+
 //#include "utils.h"
 
 static const int width = 800;
@@ -18,28 +20,30 @@ int main(int argc, char **argv)
 
     // Create a renderer (accelerated and in sync with the display refresh rate)
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    //TTF_Init();
+    TTF_Font *font;
 
-    int x = 390;
-    int y = 50;
+    float x = 390;
+    float y = 50;
     int wallWidth = 200;
 
     //int obx = 200;
-    int oby = 810;
-    int speed = 3;
+    float oby = 810;
+    float speed = 3;
 
     int points = 0;
     int counted1 = 0;
     int counted2 = 0;
 
-    int ob2y = 1110;
+    float ob2y = 1110;
 
-    int obx = (rand() % 320)+200;
-    int ob2x = (rand() % 350)+200;
-    int ob3x = (rand() % 300)+200;
+    float obx = (rand() % 320)+200;
+    float ob2x = (rand() % 350)+200;
+    float ob3x = (rand() % 300)+200;
 
-    int ob4x = (rand() % 320)+200;
-    int ob5x = (rand() % 350)+200;
-    int ob6x = (rand() % 300)+200;
+    float ob4x = (rand() % 320)+200;
+    float ob5x = (rand() % 350)+200;
+    float ob6x = (rand() % 300)+200;
 
     bool running = true;
     bool move_left = false;
