@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 
     // Create a renderer (accelerated and in sync with the display refresh rate)
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    //TTF_Init();
+    TTF_Init();
     TTF_Font *font;
 
     float x = 390;
@@ -122,6 +122,9 @@ int main(int argc, char **argv)
                 speed++;
             }
         }
+        char array[64];
+        sprintf(array, "%d", points);
+        printf("%s\n", array);
         //ob2y -= 0.1;
         //ob3y -= 0.1;
         if(oby < -50){
@@ -148,6 +151,7 @@ int main(int argc, char **argv)
         if(y > 550){
             y = 550;
         }
+
         if(x + 20 >= obx && x <= obx + 70){
             if(oby + 50 >= y && oby <= y+50){
                break;
