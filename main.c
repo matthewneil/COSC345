@@ -3,15 +3,27 @@
 #include <stdbool.h>
 #include <SDL_ttf.h>
 #include <SDL2/SDL.h>
-
+#include <SDL_image.h>
 
 //#include "utils.h"
 
 static const int width = 800;
 static const int height = 600;
+static TTF_Font *font = NULL;
+static SDL_Renderer *renderer;
 
-int main(int argc, char **argv)
-{
+/*
+void displayText(TTF_Font *font, char *message, SDL_Color colour, SDL_Rect rectangle){
+    //SDL_Color textColor = colour;
+    SDL_RenderClear(renderer);
+    SDL_Surface* mainMessage = TTF_RenderText_Solid(font, message, colour);
+    SDL_Texture* mainMessage2 = SDL_CreateTextureFromSurface(renderer, mainMessage);
+    SDL_RenderCopy(renderer, mainMessage2, NULL, rectangle);
+    SDL_RenderPresent(renderer);
+}*/
+
+
+int main(int argc, char **argv){
     // Initialize SDL
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -19,7 +31,9 @@ int main(int argc, char **argv)
     SDL_Window *window = SDL_CreateWindow("Raymond Simulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
 
     // Create a renderer (accelerated and in sync with the display refresh rate)
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
+    IMG_Init(IMG_INIT_JPG);
     TTF_Init();
 
     float x = 390;
@@ -45,10 +59,20 @@ int main(int argc, char **argv)
     float ob6x = (rand() % 300)+200;
 
     SDL_Rect MainMenu_rect;
-    MainMenu_rect.x = 200;
-    MainMenu_rect.y = 50;
+    MainMenu_rect.x = 250;
+    MainMenu_rect.y = 285;
     MainMenu_rect.w = 300;
-    MainMenu_rect.h = 50;
+    MainMenu_rect.h = 30;
+
+    SDL_Rect wall_rect;
+    wall_rect.x = 0;
+    wall_rect.y = 0;
+    wall_rect.w = 200;
+    wall_rect.h = 600;
+
+    SDL_Rect wall_rect2 = wall_rect;
+    wall_rect2.x = 600;
+
 
     bool running = true;
     bool move_left = false;
@@ -57,11 +81,15 @@ int main(int argc, char **argv)
     bool move_down = false;
     SDL_Event event;
     bool main_menu = true;
+    bool gameOver = false;
 
-    TTF_Font *font = NULL;
+
     SDL_Color textColor = { 255, 0, 255 };
     //Open the font
     font = TTF_OpenFont( "/Windows/Fonts/Arial.ttf", 28 );
+
+    SDL_Surface *image = IMG_Load("wall.png");
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, image);
 
     while(running){
 
@@ -87,12 +115,17 @@ int main(int argc, char **argv)
                     main_menu = false;
                 }
             }
+
             SDL_Color textColor = { 255, 255, 255 };
             SDL_RenderClear(renderer);
             SDL_Surface* mainMessage = TTF_RenderText_Solid(font, "Press space bar to start!", textColor);
             SDL_Texture* mainMessage2 = SDL_CreateTextureFromSurface(renderer, mainMessage);
             SDL_RenderCopy(renderer, mainMessage2, NULL, &MainMenu_rect);
             SDL_RenderPresent(renderer);
+            //displayText(font, "Press Spacebar to start!", textColor, &MainMenu_rect);
+
+        } else if (gameOver == true){
+
         } else {
 
             if(event.type == SDL_QUIT){
@@ -144,6 +177,14 @@ int main(int argc, char **argv)
             if(x < wallWidth || x > width - wallWidth - 20){
                 break;
             }
+
+
+
+
+
+
+
+            //SDL_RenderPresent(renderer);
 
             oby -= speed;
             ob2y -= speed;
@@ -302,6 +343,9 @@ int main(int argc, char **argv)
             SDL_RenderCopy(renderer, Message2, NULL, &Message_rect2);
             // Show what was drawn
 
+            SDL_RenderCopy(renderer, texture, NULL, &wall_rect);
+
+            SDL_RenderCopy(renderer, texture, NULL, &wall_rect2);
             // Show what was drawn
             SDL_RenderPresent(renderer);
         }
@@ -312,7 +356,7 @@ int main(int argc, char **argv)
     TTF_CloseFont(font);
 
     TTF_Quit();
-
+    IMG_Quit();
     // Release resources
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
@@ -320,3 +364,5 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
+
