@@ -73,6 +73,20 @@ int main(int argc, char **argv){
     SDL_Rect wall_rect2 = wall_rect;
     wall_rect2.x = 600;
 
+    SDL_Rect wall_rect1_2 = wall_rect;
+    wall_rect1_2.y = 600;
+
+    SDL_Rect wall_rect2_2 = wall_rect2;
+    wall_rect2_2.y = 600;
+
+    SDL_Rect background_rect;
+    background_rect.x = 0;
+    background_rect.y = 0;
+    background_rect.w = 800;
+    background_rect.h = 600;
+
+    SDL_Rect background_rect2 = background_rect;
+    background_rect.y = 600;
 
     bool running = true;
     bool move_left = false;
@@ -90,6 +104,9 @@ int main(int argc, char **argv){
 
     SDL_Surface *image = IMG_Load("wall.png");
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, image);
+
+    SDL_Surface *background = IMG_Load("stonebackground.png");
+    SDL_Texture *backTexture = SDL_CreateTextureFromSurface(renderer, background);
 
     while(running){
 
@@ -285,10 +302,22 @@ int main(int argc, char **argv){
             }
 
 
+
             // Clear screen with black
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
 
+            background_rect.y -= 2;
+            if(background_rect.y <= -600){
+                background_rect.y = 600;
+            }
+            SDL_RenderCopy(renderer, backTexture, NULL, &background_rect);
+
+            background_rect2.y -= 2;
+            if(background_rect2.y <= -600){
+                background_rect2.y = 600;
+            }
+            SDL_RenderCopy(renderer, backTexture, NULL, &background_rect2);
             // Draw
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
 
@@ -342,10 +371,29 @@ int main(int argc, char **argv){
             SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
             SDL_RenderCopy(renderer, Message2, NULL, &Message_rect2);
             // Show what was drawn
-
+            wall_rect.y -= 3;
+            if(wall_rect.y <= -600){
+                wall_rect.y = 600;
+            }
             SDL_RenderCopy(renderer, texture, NULL, &wall_rect);
 
+            wall_rect2.y -= 3;
+            if(wall_rect2.y <= -600){
+                wall_rect2.y = 600;
+            }
             SDL_RenderCopy(renderer, texture, NULL, &wall_rect2);
+
+            wall_rect1_2.y -= 3;
+            if(wall_rect1_2.y <= -600){
+                wall_rect1_2.y = 600;
+            }
+            SDL_RenderCopy(renderer, texture, NULL, &wall_rect1_2);
+
+            wall_rect2_2.y -= 3;
+            if(wall_rect2_2.y <= -600){
+                wall_rect2_2.y = 600;
+            }
+            SDL_RenderCopy(renderer, texture, NULL, &wall_rect2_2);
             // Show what was drawn
             SDL_RenderPresent(renderer);
         }
