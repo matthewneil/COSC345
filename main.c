@@ -11,6 +11,7 @@ static const int width = 800;
 static const int height = 600;
 static TTF_Font *font = NULL;
 static SDL_Renderer *renderer;
+static const int FRAMES_PER_SECOND = 20;
 
 /*
 void displayText(TTF_Font *font, char *message, SDL_Color colour, SDL_Rect rectangle){
@@ -28,7 +29,7 @@ int main(int argc, char **argv){
     SDL_Init(SDL_INIT_VIDEO);
 
     // Create a SDL window
-    SDL_Window *window = SDL_CreateWindow("Raymond Simulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
+    SDL_Window *window = SDL_CreateWindow("Minecraft 2: Steve Dies", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
 
     // Create a renderer (accelerated and in sync with the display refresh rate)
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -81,7 +82,7 @@ int main(int argc, char **argv){
 
     SDL_Rect background_rect;
     background_rect.x = 0;
-    background_rect.y = 0;
+    background_rect.y = 0.0;
     background_rect.w = 800;
     background_rect.h = 600;
 
@@ -107,6 +108,12 @@ int main(int argc, char **argv){
 
     SDL_Surface *background = IMG_Load("stonebackground.png");
     SDL_Texture *backTexture = SDL_CreateTextureFromSurface(renderer, background);
+
+    Uint32 startTime = 0;
+    Uint32 endTime = 0;
+    Uint32 delta = 0;
+    short fps = 60;
+    short timePerFrame = 16; // miliseconds
 
     while(running){
 
@@ -192,17 +199,9 @@ int main(int argc, char **argv){
             }
 
             if(x < wallWidth || x > width - wallWidth - 20){
-                break;
+                main_menu = true;
             }
-
-
-
-
-
-
-
             //SDL_RenderPresent(renderer);
-
             oby -= speed;
             ob2y -= speed;
             if((oby <= y-5 && counted1 == 0)){
@@ -301,19 +300,17 @@ int main(int argc, char **argv){
                 }
             }
 
-
-
             // Clear screen with black
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
 
-            background_rect.y -= 2;
+            background_rect.y -= 0.6;
             if(background_rect.y <= -600){
                 background_rect.y = 600;
             }
             SDL_RenderCopy(renderer, backTexture, NULL, &background_rect);
 
-            background_rect2.y -= 2;
+            background_rect2.y -= 0.6;
             if(background_rect2.y <= -600){
                 background_rect2.y = 600;
             }
@@ -371,31 +368,52 @@ int main(int argc, char **argv){
             SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
             SDL_RenderCopy(renderer, Message2, NULL, &Message_rect2);
             // Show what was drawn
-            wall_rect.y -= 3;
+            wall_rect.y -= 5;
             if(wall_rect.y <= -600){
                 wall_rect.y = 600;
             }
             SDL_RenderCopy(renderer, texture, NULL, &wall_rect);
 
-            wall_rect2.y -= 3;
+            wall_rect2.y -= 5;
             if(wall_rect2.y <= -600){
                 wall_rect2.y = 600;
             }
             SDL_RenderCopy(renderer, texture, NULL, &wall_rect2);
 
-            wall_rect1_2.y -= 3;
+            wall_rect1_2.y -= 5;
             if(wall_rect1_2.y <= -600){
                 wall_rect1_2.y = 600;
             }
             SDL_RenderCopy(renderer, texture, NULL, &wall_rect1_2);
 
-            wall_rect2_2.y -= 3;
+            wall_rect2_2.y -= 5;
             if(wall_rect2_2.y <= -600){
                 wall_rect2_2.y = 600;
             }
             SDL_RenderCopy(renderer, texture, NULL, &wall_rect2_2);
             // Show what was drawn
             SDL_RenderPresent(renderer);
+            if (!startTime) {
+                        // get the time in ms passed from the moment the program started
+                        startTime = SDL_GetTicks();
+                    } else {
+                        delta = endTime - startTime; // how many ms for a frame
+                    }
+
+
+                    // if less than 16ms, delay
+                    if (delta < timePerFrame) {
+                        //SDL_Delay(1);
+                    }
+
+                    // if delta is bigger than 16ms between frames, get the actual fps
+                    if (delta > timePerFrame) {
+                        fps = 1000 / delta;
+                    }
+
+                    printf("FPS is: %i \n", fps);
+                    startTime = endTime;
+                    endTime = SDL_GetTicks();
         }
 
 
