@@ -34,7 +34,7 @@ int main(int argc, char **argv){
     // Create a renderer (accelerated and in sync with the display refresh rate)
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
-    IMG_Init(IMG_INIT_JPG);
+    IMG_Init(IMG_INIT_PNG);
     TTF_Init();
 
     float x = 390;
@@ -65,14 +65,16 @@ int main(int argc, char **argv){
     MainMenu_rect.w = 300;
     MainMenu_rect.h = 30;
 
+    int wallLeftX = -200;
+    int wallRightX = 600;
     SDL_Rect wall_rect;
-    wall_rect.x = 0;
+    wall_rect.x = wallLeftX;
     wall_rect.y = 0;
-    wall_rect.w = 200;
+    wall_rect.w = 400;
     wall_rect.h = 600;
 
     SDL_Rect wall_rect2 = wall_rect;
-    wall_rect2.x = 600;
+    wall_rect2.x = wallRightX;
 
     SDL_Rect wall_rect1_2 = wall_rect;
     wall_rect1_2.y = 600;
@@ -109,16 +111,21 @@ int main(int argc, char **argv){
     SDL_Surface *background = IMG_Load("stonebackground.png");
     SDL_Texture *backTexture = SDL_CreateTextureFromSurface(renderer, background);
 
+    //SDL_Surface *image = IMG_Load("guy.png");
+    //SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, image);
+    int left = 1;
     Uint32 startTime = 0;
     Uint32 endTime = 0;
     Uint32 delta = 0;
     short fps = 60;
     short timePerFrame = 16; // miliseconds
-
+    char *array = (char *) malloc(64);
     while(running){
 
         if (main_menu == true){
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            wallLeftX = -200;
+            wallRightX = 600;
             oby = 810;
             speed = 3;
             points = 0;
@@ -197,8 +204,26 @@ int main(int argc, char **argv){
             if(move_down){
                 y += 5;
             }
+            wall_rect.x = wallLeftX;
+            wall_rect2.x = wallRightX;
+            wall_rect1_2.x = wallLeftX;
+            wall_rect2_2.x = wallRightX;
 
-            if(x < wallWidth || x > width - wallWidth - 20){
+            if(left == 1){
+                wallLeftX -= 1;
+                wallRightX -= 1;
+                if(wallLeftX <= -400){
+                    left = 0;
+                }
+            } else {
+                wallLeftX += 1;
+                wallRightX += 1;
+                if(wallRightX >= 800){
+                    left = 1;
+                }
+            }
+
+            if(x < 400 + wallLeftX || x > wallRightX - 20){
                 main_menu = true;
             }
             //SDL_RenderPresent(renderer);
@@ -304,13 +329,13 @@ int main(int argc, char **argv){
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
 
-            background_rect.y -= 0.6;
+            background_rect.y -= 1;
             if(background_rect.y <= -600){
                 background_rect.y = 600;
             }
             SDL_RenderCopy(renderer, backTexture, NULL, &background_rect);
 
-            background_rect2.y -= 0.6;
+            background_rect2.y -= 1;
             if(background_rect2.y <= -600){
                 background_rect2.y = 600;
             }
@@ -354,7 +379,7 @@ int main(int argc, char **argv){
             SDL_Rect rect7 = {ob6x, ob2y, 100, 50};
             SDL_RenderFillRect(renderer, &rect7);
 
-            char array[64];
+
             sprintf(array, "%d", points);
             printf("%s\n", array);
 
@@ -420,7 +445,7 @@ int main(int argc, char **argv){
     }
 
     TTF_CloseFont(font);
-
+    free(array);
     TTF_Quit();
     IMG_Quit();
     // Release resources
