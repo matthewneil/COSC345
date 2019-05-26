@@ -9,6 +9,10 @@
 static const int width = 1000;
 static const int height = 600;
 
+static int wallLeftX;
+static int wallRightX;
+static int pos;
+
 int main(int argc, char **argv){
 
     // Initialize SDL
@@ -18,7 +22,7 @@ int main(int argc, char **argv){
     SDL_Window *window = SDL_CreateWindow("Minecraft 3: Steve returns and nukes new zealand", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
 
     // Create a renderer (accelerated and in sync with the display refresh rate)
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     bool complete;
     int x = 475;
     int y = 250;
@@ -57,9 +61,9 @@ int main(int argc, char **argv){
     short timePerFrame = 16; // miliseconds
 
     SDL_Rect wall_rect;
-    wall_rect.x = -300;
+    wall_rect.x = -800;
     wall_rect.y = 0;
-    wall_rect.w = 500;
+    wall_rect.w = 1000;
     wall_rect.h = 600;
 
     SDL_Rect wall_rect2 = wall_rect;
@@ -133,8 +137,8 @@ int main(int argc, char **argv){
     Title_rect.w = 700;
     Title_rect.h = 300;
 
-    int wallLeftX = -300;
-    int wallRightX = 800;
+    wallLeftX = -800;
+    wallRightX = 800;
 
     int phases = 0;
 
@@ -158,7 +162,6 @@ int main(int argc, char **argv){
     float ob6x = (rand() % 500)+200;
 
     float wallPos1 = 100, wallPos2 = 300, wallPos3 = 500, wallPos4 = 700;
-    int pos;
 
     SDL_Event event;
 
@@ -308,7 +311,7 @@ int main(int argc, char **argv){
                 oby = 600;
                 ob2y = 900;
                 mode = 0;
-                wallLeftX = -300;
+                wallLeftX = -800;
                 wallRightX = 800;
                 wall_rect.x = wallLeftX;
                 wall_rect2.x = wallRightX;
@@ -463,7 +466,7 @@ int main(int argc, char **argv){
 
                 int wallWidth = 200;
 
-                if(x <  wallLeftX + 500 || x > wallRightX - 20){
+                if(x <  wallLeftX + 1000 || x > wallRightX - 20){
                     game_over = true;
                     x = 475;
                     y = 250;
@@ -675,7 +678,7 @@ int main(int argc, char **argv){
                             wall_rect2.x = wallRightX;
                             wall_rect1_2.x = wallLeftX;
                             wall_rect2_2.x = wallRightX;
-                            if(wallLeftX >= -150){
+                            if(wallLeftX >= -650){
                                 setup = false;
                                 complete = false;
                                 pos = rand() % 4;
@@ -688,59 +691,13 @@ int main(int argc, char **argv){
                             wall_rect2_2.x = wallRightX;
 
                             if(pos == 0){
-                                if(!complete){
-                                    wallLeftX -= 3;
-                                    wallRightX -= 3;
-                                    if(wallLeftX <= wallPos1-500){
-                                        //complete = true;
-                                        pos = rand() % 4;
-                                    }
-                                }
+                                movingWall(wallPos1);
                             } else if(pos == 1){
-                                if(!complete){
-                                    if(wallLeftX < wallPos2 - 500) {
-                                        wallLeftX += 3;
-                                        wallRightX += 3;
-                                        if(wallLeftX >= wallPos2-500){
-                                            //complete = true;
-                                            pos = rand() % 4;
-                                        }
-                                    } else {
-                                        wallLeftX -= 3;
-                                        wallRightX -= 3;
-                                        if(wallLeftX <= wallPos2-500){
-                                            //complete = true;
-                                            pos = rand() % 4;
-                                        }
-                                    }
-                                }
+                                movingWall(wallPos2);
                             } else if(pos == 2){
-                                if(!complete){
-                                    if(wallLeftX < wallPos3 - 500) {
-                                        wallLeftX += 3;
-                                        wallRightX += 3;
-                                        if(wallLeftX >= wallPos3-500){
-                                            //complete = true;
-                                            pos = rand() % 4;
-                                        }
-                                    } else {
-                                        wallLeftX -= 3;
-                                        wallRightX -= 3;
-                                        if(wallLeftX <= wallPos3-500){
-                                            //complete = true;
-                                            pos = rand() % 4;
-                                        }
-                                    }
-                                }
+                                movingWall(wallPos3);
                             } else {
-                                if(!complete){
-                                    wallLeftX += 3;
-                                    wallRightX += 3;
-                                    if(wallLeftX >= wallPos4-500){
-                                        //complete = true;
-                                        pos = rand() % 4;
-                                    }
-                                }
+                                movingWall(wallPos4);
                             }
 
                         }
@@ -754,14 +711,14 @@ int main(int argc, char **argv){
                         wall_rect2.x = wallRightX;
                         wall_rect1_2.x = wallLeftX;
                         wall_rect2_2.x = wallRightX;
-                        if(wallLeftX > -300){
+                        if(wallLeftX > -800){
                             wallLeftX -= 4;
                         }
                         if(wallRightX < 800){
                             wallRightX += 4;
                         }
-                        if(wallLeftX <= -300 && wallRightX >= 800){
-                            wallLeftX = -300;
+                        if(wallLeftX <= -800 && wallRightX >= 800){
+                            wallLeftX = -800;
                             wallRightX = 800;
                             mode = 0;
                             switchModes = false;
@@ -801,4 +758,21 @@ int main(int argc, char **argv){
     SDL_Quit();
 
     return 0;
+}
+
+void movingWall (int wallPos)
+{
+    if(wallLeftX < wallPos - 1000) {
+        wallLeftX += 4;
+        wallRightX += 4;
+        if(wallLeftX >= wallPos-1000){
+            pos = rand() % 4;
+        }
+    } else {
+        wallLeftX -= 4;
+        wallRightX -= 4;
+        if(wallLeftX <= wallPos-1000){
+            pos = rand() % 4;
+        }
+    }
 }
