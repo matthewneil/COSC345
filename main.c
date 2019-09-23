@@ -335,7 +335,8 @@ int main(int argc, char **argv)
                                 main_menu_test = false;
                                 main_menu_screen = true;
                             } else if(option == 1) {
-                                printf("Leaderboard not implemented.\n");
+                                main_menu = false;
+                                leaderboard = true;
                             } else if(option == 2) {
                                 about = true;
                                 main_menu_test = false;
@@ -568,10 +569,16 @@ int main(int argc, char **argv)
                 }
                 while(SDL_PollEvent(&event)) {
                     if(event.key.keysym.sym == SDLK_BACKSPACE) {//start again
-                        game_over = true;
-                        leaderboard = false;
-                        main_menu = false;
-                        reading_first_time = true;
+                        if(main_menu_test == true){
+                            leaderboard = false;
+                            main_menu = true;
+                            reading_first_time = true;
+                        } else {
+                            game_over = true;
+                            leaderboard = false;
+                            main_menu = false;
+                            reading_first_time = true;
+                        }
                     }
                 }
             } else {//no menus currently running, start and run game
@@ -772,7 +779,6 @@ int main(int argc, char **argv)
                     float angle = 0.0;
                     SDL_Point center = {8, 8};
                     SDL_RendererFlip flip = SDL_FLIP_HORIZONTAL;
-
                     SDL_RenderCopyEx(renderer, spriteFallingTexture, NULL , &rect, angle, &center, flip);
                 }else{
                     SDL_RenderCopy(renderer, spriteFallingTexture, NULL, &rect);
