@@ -1,0 +1,447 @@
+/**
+ *
+ * COSC345 'Dungeon Fall' Assignment 2 2019
+ * Ben Highsted, Matthew Neil, Jasmine Hindson
+ *
+ * Last Edited: Fri Sep 27 16:02:43 NZST 2019
+ *
+ */
+
+/**
+ https://www.freepik.com/free-vector/set-realistic-fire-flames_5199081.html
+ Resource used for the flames on the executable icon.
+ */
+#include <stdio.h>//standard includes
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#include <SDL2/SDL.h>//SDL2 includes
+#include <SDL2/SDL_image.h>
+#include "SDL2_ttf/SDL_ttf.h"
+#include "SDL2_mixer/SDL_mixer.h"
+
+#define TICK_INTERVAL 15
+#define MAXCHAR 1000
+
+static const int width = 1000, height = 700;//width and height of the window
+
+static Uint32 next_time;
+/** Method works out how much time is left and determines how much to slow down for the current PC
+ *  https://www.libsdl.org/release/SDL-1.2.15/docs/html/guidetimeexamples.html
+ *  Essentially caps the fps to keep it consistent across multiple computers
+ **/
+Uint32 time_left(void)
+{
+    Uint32 now;
+    now = SDL_GetTicks();
+    if(next_time <= now){
+        return 0;
+    }else{
+        return next_time - now;
+    }
+}
+
+/** Method destroys and frees the surface/textures passed to it. Mainly used to save line space. **/
+void destroyAndFree (SDL_Surface* surface, SDL_Texture* texture)
+{
+    SDL_FreeSurface(surface);
+    SDL_DestroyTexture(texture);
+}
+
+int main(int argc, char **argv)
+{
+    next_time = SDL_GetTicks() + TICK_INTERVAL;//determines how fast the program should run
+    Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);//opens the SDL_Mixer audio stuff
+    Mix_Music *music = NULL;
+    Mix_Chunk *fireball = NULL;//loading in the fireball sound effect
+    fireball = Mix_LoadWAV("content/fireball.mp3");
+    music = Mix_LoadMUS("content/dungeonMusic.mp3");//Non copyrighted music from https://www.youtube.com/watch?v=6Lm4yer6KxE
+    if(music == NULL)
+    {
+        printf("Failed to find music file (is the content folder in the right location?)");
+        //return false;
+    }
+    Mix_PlayMusic(music, -1);//starts the music playing
+    
+    SDL_Init(SDL_INIT_VIDEO);//Initialize SDL and creates a window/renderer
+    SDL_Window *window = SDL_CreateWindow("Dungeon Fall", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    TTF_Init();//Font initialisation code
+    IMG_Init(IMG_INIT_JPG);//Image initialisation code
+    TTF_Font *font = NULL, *font2 = NULL;//creates font variables and assigns them to fonts out of /Library/Fonts.
+    font = TTF_OpenFont("/Library/Fonts/Georgia.ttf", 100);//Only works for MACOS currently.
+    font2 = TTF_OpenFont("/Library/Fonts/Arial.ttf", 100);
+    if(!font) {
+        printf("Failed to find font (is the content folder in the right location?)");
+        return false;
+    }
+    /** Variable Declarations **/
+    bool arr = true;
+    int arrowAnimation = 0;
+    int score = 00000001, attempts = 0, counterAdd = 5, x = 475, y = 250;
+    int startx = 300, starty = 600, fallx = 300, fally = -100, wallLeftX = -800, wallRightX = 800;
+    int mode = 0, pos = 0, position = 185;
+    int startyGameOver = 560, currentScore = 0;
+    int speed = 4, oby = -100, ob2y = 10000000;
+    float menuCounter = 0, fallCounter = 0, backCounter = 0, backCounter2 = 0, menuCounterGameOver = 0;
+    float counter = 0.0, counter2 = 0.0, counter3 = 0.0, counter4 = 0.0;
+    float count = 0, count2 = 100;
+    float fireObjectsX[] = {(rand() % 480)+200, (rand() % 480)+200, (rand() % 480)+200, (rand() % 480)+200, (rand() % 480)+200, (rand() % 480)+200};
+    bool add = true, fall = false, first_loop = false, running = true;
+    bool setup = true, switchModes = false, complete = false;
+    bool move_left = false, move_right = false, move_up = false, move_down = false;
+    bool main_menu = true, game_over = false, rightmove = false;
+    bool character_description = false, main_menu_screen = false;
+    bool sprite1 = true, sprite2 = false, sprite3 = false;
+    bool first_time = true, first_game_over = true, showHighScore = false;
+    bool addGameOver = true, leaderboard = false, reading_first_time = true;
+    char *array = (char *) malloc(64), *array2 = (char *) malloc(64), *array3 = (char *) malloc(100);
+    /** Rectangle Declarations **/
+    SDL_Rect wall_rect = {-800, 0, 1000, 700};
+    SDL_Rect wall_rect2 = wall_rect;
+    wall_rect2.x = 800;
+    SDL_Rect wall_rect1_2 = wall_rect;
+    wall_rect1_2.y = 700;
+    SDL_Rect wall_rect2_2 = wall_rect2;
+    wall_rect2_2.y = 700;
+    SDL_Rect Message_rect = {505, 5, 35, 20};
+    SDL_Rect Message_rect2 = {450, 0, 50, 30};
+    SDL_Rect Title_rect = {150, 50, 700, 300};
+    SDL_Rect Title_background_rect = {0, 0, 1000, 710};
+    SDL_Rect Title_background_rect2 = {0, 700, 1000, 710};
+    SDL_Rect background_rect = {0, 0, 1000, 710};
+    SDL_Rect background_rect2 = {0, 710, 1000, 710};
+    SDL_Rect sprite1_rect = {200, 370, 130, 130};
+    SDL_Rect sprite_rect2 = {375, 50, 220, 220};
+    SDL_Rect sprite2_rect = {400, 370, 130, 130};
+    SDL_Rect sprite3_rect = {600, 370, 130, 130};
+    SDL_Rect source_rect_red = {0, 0, 10, 26};
+    SDL_Rect source_rect_blue = {0, 0, 9, 24};
+    SDL_Rect source_rect_green = {0, 0, 9, 25};
+    SDL_Rect gFlashClips = {555, 210, 250, 150};
+    SDL_Event event;//starts SDL event
+    //Background and wall textures
+    SDL_Surface *image = IMG_Load("content/bricks.png");//From: https://www.deviantart.com/skazdal/art/Rock-bricks-texture-670434391
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, image);
+    SDL_Surface *background = IMG_Load("content/bricksBackground.png");//From: http://pixelartmaker.com/art/31b17490e7ef5d8
+    SDL_Texture *backTexture = SDL_CreateTextureFromSurface(renderer, background);
+    //Border and Sprite textures
+    SDL_Surface *borderSurface = IMG_Load("content/border.png");//Following images created by Jasmine Hindson
+    SDL_Texture *border = SDL_CreateTextureFromSurface(renderer, borderSurface);
+    SDL_Surface *spriteStraightTexture = IMG_Load("content/sprite1straight.png");
+    SDL_Texture *sprite1StraightTexture = SDL_CreateTextureFromSurface(renderer, spriteStraightTexture);
+    SDL_Surface *sprite2Straight = IMG_Load("content/sprite2straight.png");
+    SDL_Texture *sprite2StraightTexture = SDL_CreateTextureFromSurface(renderer, sprite2Straight);
+    SDL_Surface *sprite3Straight = IMG_Load("content/sprite3straight.png");
+    SDL_Texture *sprite3StraightTexture = SDL_CreateTextureFromSurface(renderer, sprite3Straight);
+    SDL_Surface *spriteTexture = IMG_Load("content/sprite1falling.png");
+    SDL_Texture *sprite1FallingTexture = SDL_CreateTextureFromSurface(renderer, spriteTexture);
+    SDL_Surface *sprite2Falling = IMG_Load("content/sprite2falling.png");
+    SDL_Texture *sprite2FallingTexture = SDL_CreateTextureFromSurface(renderer, sprite2Falling);
+    SDL_Surface *sprite3Falling = IMG_Load("content/sprite3falling.png");
+    SDL_Texture *sprite3FallingTexture = SDL_CreateTextureFromSurface(renderer, sprite3Falling);
+    //Fireball/Object textures
+    SDL_Surface *fireRed = IMG_Load("content/fire-red.png");//Following images from https://stealthix.itch.io/animated-fires
+    SDL_Texture *fireRedTexture = SDL_CreateTextureFromSurface(renderer, fireRed);
+    SDL_Surface *fireBlue = IMG_Load("content/fire-blue.png");
+    SDL_Texture *fireBlueTexture = SDL_CreateTextureFromSurface(renderer, fireBlue);
+    SDL_Surface *fireGreen = IMG_Load("content/fire-green.png");
+    SDL_Texture *fireGreenTexture = SDL_CreateTextureFromSurface(renderer, fireGreen);
+    //Character Descriptions textures
+    SDL_Surface *surfaceMessage;
+    SDL_Surface *surfaceMessage2;
+    SDL_Texture *Message;
+    SDL_Texture *Message2;
+    SDL_Surface *image1_description = IMG_Load("content/andrew-description.png");
+    SDL_Texture *description_texture1 = SDL_CreateTextureFromSurface(renderer, image1_description);
+    SDL_Surface *image2_description = IMG_Load("content/bunny-description.png");
+    SDL_Texture *description_texture2 = SDL_CreateTextureFromSurface(renderer, image2_description);
+    SDL_Surface *image3_description = IMG_Load("content/matthew-description.png");
+    SDL_Texture *description_texture3 = SDL_CreateTextureFromSurface(renderer, image3_description);
+    SDL_Rect description_image = {5, 250, 990, 250};
+    //Game over screen textures
+    SDL_Surface *leaderTitleSurface = IMG_Load("content/titleLeaderboard.png");
+    SDL_Surface *gameOverTitleSurface = IMG_Load("content/titleGameOver.png");
+    SDL_Surface *menuTitleSurface = IMG_Load("content/titleMenu.png");
+    SDL_Surface *tryAgainTitleSurface = IMG_Load("content/titleTryAgain.png");
+    SDL_Surface *attemptMessageSurface = IMG_Load("content/messageAttempt.png");
+    SDL_Surface *scoreMessageSurface = IMG_Load("content/messageScore.png");
+    SDL_Surface *highScoreMessageSurface = IMG_Load("content/messageHighScore.png");
+    SDL_Surface *newHighscoreSurface = IMG_Load("content/newHighScore.png");
+    SDL_Texture *leaderTitleTexture = SDL_CreateTextureFromSurface(renderer, leaderTitleSurface);
+    SDL_Texture *gameOverTitleTexture = SDL_CreateTextureFromSurface(renderer, gameOverTitleSurface);
+    SDL_Texture *menuTitleTexture = SDL_CreateTextureFromSurface(renderer, menuTitleSurface);
+    SDL_Texture *tryAgainTitleTexture = SDL_CreateTextureFromSurface(renderer, tryAgainTitleSurface);
+    SDL_Texture *attemptMessageTexture = SDL_CreateTextureFromSurface(renderer, attemptMessageSurface);
+    SDL_Texture *scoreMessageTexture = SDL_CreateTextureFromSurface(renderer, scoreMessageSurface);
+    SDL_Texture *highScoreMessageTexture = SDL_CreateTextureFromSurface(renderer, highScoreMessageSurface);
+    SDL_Texture *newHighscoreTexture = SDL_CreateTextureFromSurface(renderer, newHighscoreSurface);
+    //Main Menu screen textures
+    SDL_Surface *mainMenuTitleSurface = IMG_Load("content/menuTitle.png");
+    SDL_Texture *mainMenuTitleTexture = SDL_CreateTextureFromSurface(renderer, mainMenuTitleSurface);
+    SDL_Surface *mainMenuStartSurface = IMG_Load("content/menuStart.png");
+    SDL_Texture *mainMenuStartTexture = SDL_CreateTextureFromSurface(renderer, mainMenuStartSurface);
+    SDL_Surface *pressBackspace = IMG_Load("content/pressBackspace.png");
+    SDL_Texture *pressBackspaceTexture = SDL_CreateTextureFromSurface(renderer, pressBackspace);
+    SDL_Surface *pressEnter = IMG_Load("content/pressEnter.png");
+    SDL_Texture *pressEnterTexture = SDL_CreateTextureFromSurface(renderer, pressEnter);
+    SDL_Surface *selectCharacter = IMG_Load("content/selectCharacter.png");
+    SDL_Texture *selectCharacterTexture = SDL_CreateTextureFromSurface(renderer, selectCharacter);
+    //Leaderboard textures and text stuff
+    char delim[] = " ", delim2[] = "\n", *ptr = (char *) malloc(64), *username = "You";
+    SDL_Surface *leaderboardTitleSurface = IMG_Load("content/leaderboardTitle.png");
+    SDL_Texture *leaderboardTitleTexture = SDL_CreateTextureFromSurface(renderer, leaderboardTitleSurface);
+    SDL_Rect leaderboardTitleRect = {150, 20, 700, 150};
+    //instruction textures
+    SDL_Surface *instructionSurface = IMG_Load("content/arrowkeys.png");
+    SDL_Texture *instructionTexture = SDL_CreateTextureFromSurface(renderer, instructionSurface);
+    SDL_Rect instructionRect = {510, 300, 300, 200};
+    SDL_Surface *instructionTextSurface = IMG_Load("content/keystomove.png");
+    SDL_Texture *instructionTextTexture = SDL_CreateTextureFromSurface(renderer, instructionTextSurface);
+    SDL_Rect instructionTextRect = {230, 370, 300, 150};
+    //main main menu screen stuff
+    int option = 0;
+    SDL_Rect mainMenuRect = {345, 340, 300, 260};
+    SDL_Surface *mainMenuOptionsSurface = IMG_Load("content/mainMenu.png");
+    SDL_Texture *mainMenuOptionsTexture = SDL_CreateTextureFromSurface(renderer, mainMenuOptionsSurface);
+    bool main_menu_test = true; //main_menu_screen needs to be false
+    SDL_Rect arrow = {200, 600, 50, 50};
+    SDL_Rect arrow2 = {600, 600, 50, 50};
+    SDL_Surface *blueArrowSurface = IMG_Load("content/arrow.png");
+    SDL_Texture *blueArrowTexture = SDL_CreateTextureFromSurface(renderer, blueArrowSurface);
+    SDL_Surface *blueArrowSurface2 = IMG_Load("content/arrow2.png");
+    SDL_Texture *blueArrowTexture2 = SDL_CreateTextureFromSurface(renderer, blueArrowSurface2);
+    
+    bool about = false;
+    
+    //setup complete, starts game loop
+    while(running){
+        SDL_Delay(time_left());//used to run at the same speed on every device
+        next_time += TICK_INTERVAL;
+        if(event.type == SDL_QUIT) {//if the user clicks the red X to quit
+            running = false;//stop running
+        }
+        if(main_menu == true){//if the game state is in the main menu
+            if(character_description == true) {//if the user presses enter on a character
+                SDL_RenderClear(renderer);
+                SDL_Rect nameRect = {300, 280, 370, 50};//basic rectangles
+                SDL_Rect infoRect = {400, 550, 200, 30};
+                SDL_Texture *sprite = NULL, *nameTexture = NULL;
+                SDL_Surface *nameSurface = NULL;
+                //decides which text and sprite needs to be displayed, then displays it.
+                SDL_RenderCopy(renderer, backTexture, NULL, &background_rect2);//copies all the textures into the renderer
+                SDL_RenderCopy(renderer, backTexture, NULL, &Title_background_rect);
+                SDL_RenderCopy(renderer, backTexture, NULL, &Title_background_rect2);
+                SDL_RenderCopy(renderer, nameTexture, NULL, &nameRect);
+                SDL_RenderCopy(renderer, pressBackspaceTexture, NULL, &infoRect);
+                if (sprite1 == true) {
+                    sprite = sprite1StraightTexture;
+                    SDL_RenderCopy(renderer, description_texture1, NULL, &description_image);
+                } else if (sprite2 == true) {
+                    sprite = sprite2StraightTexture;
+                    SDL_RenderCopy(renderer, description_texture2, NULL, &description_image);
+                } else if (sprite3 == true) {
+                    sprite = sprite3StraightTexture;
+                    SDL_RenderCopy(renderer, description_texture3, NULL, &description_image);
+                }
+                SDL_RenderCopy(renderer, sprite, NULL, &sprite_rect2);
+                SDL_RenderPresent(renderer);
+                destroyAndFree(nameSurface, nameTexture);
+            } else if (main_menu_test == true){
+                Title_rect.x = 150;
+                Title_rect.y = 2;
+                Title_rect.w = 700;
+                Title_rect.h = 300;
+                SDL_RenderClear(renderer);
+                SDL_RenderCopy(renderer, backTexture, NULL, &background_rect2);//copys created stuff to the renderer
+                SDL_RenderCopy(renderer, backTexture, NULL, &Title_background_rect);
+                SDL_RenderCopy(renderer, backTexture, NULL, &Title_background_rect2);
+                SDL_RenderCopy(renderer, mainMenuOptionsTexture, NULL, &mainMenuRect);
+                SDL_RenderCopy(renderer, mainMenuTitleTexture, NULL, &Title_rect);
+
+                if(option == 0){
+                    arrow.y = 350;
+                    arrow.x = 310;
+                    arrow2.y = 350;
+                    arrow2.x = 630;
+                } else if(option == 1){
+                    arrow.y = 410;
+                    arrow.x = 310;
+                    arrow2.y = 410;
+                    arrow2.x = 630;
+                } else if(option == 2){
+                    arrow.y = 480;
+                    arrow.x = 370;
+                    arrow2.y = 480;
+                    arrow2.x = 570;
+                } else if(option == 3){
+                    arrow.y = 535;
+                    arrow.x = 380;
+                    arrow2.y = 535;
+                    arrow2.x = 560;
+                }
+                
+                arrowAnimation++;
+                if(arr) {
+                    arrow.x -= 20;
+                    arrow2.x += 20;
+                }
+                if(arrowAnimation == 25){
+                    arrowAnimation = 0;
+                    if(arr) {
+                        arr = false;
+                    } else {
+                        arr = true;
+                    }
+                }
+                
+                SDL_RenderCopy(renderer, blueArrowTexture, NULL, &arrow);
+                SDL_RenderCopy(renderer, blueArrowTexture2, NULL, &arrow2);
+                
+                SDL_RenderPresent(renderer);//draws the menu
+
+            } else if (about) {
+                Title_rect.x = 150;
+                Title_rect.y = 2;
+                Title_rect.w = 700;
+                Title_rect.h = 300;
+                SDL_RenderClear(renderer);
+                SDL_RenderCopy(renderer, backTexture, NULL, &background_rect2);//copys created stuff to the renderer
+                SDL_RenderCopy(renderer, backTexture, NULL, &Title_background_rect);
+                SDL_RenderCopy(renderer, backTexture, NULL, &Title_background_rect2);
+                SDL_RenderCopy(renderer, mainMenuTitleTexture, NULL, &Title_rect);
+                //SDL_RenderCopy(renderer, aboutTexture, NULL, &aboutRect);
+                SDL_RenderPresent(renderer);//draws the menu
+            
+            }else if (main_menu_screen == true) {//standard main menu screen
+                counterAdd = 45;
+                Title_rect.x = 150;
+                Title_rect.y = 2;
+                Title_rect.w = 700;
+                Title_rect.h = 300;//resets counter speed and the title rect location
+                menuCounter += 2;//used to animate stuff on the main screen
+                fallCounter += 2;
+                backCounter += 6;
+                backCounter2 += 6;
+                if(fallCounter >= 500) {//a timer to decide when the character should fall in the background
+                    fall = true;
+                    fallCounter = 0;
+                }
+                if(starty == 605) {//decides if we need to add or minus from the 'start' animation
+                    add = false;
+                }else if(starty == 575) {
+                    add = true;
+                }
+                SDL_Rect falling_rect = {fallx, fally, 100, 100};//falling character
+                SDL_Rect border_rect = {position, 355, 160, 160};//border around current sprite
+                SDL_RenderClear(renderer);
+                SDL_RenderCopy(renderer, backTexture, NULL, &background_rect2);//copys created stuff to the renderer
+                SDL_RenderCopy(renderer, backTexture, NULL, &Title_background_rect);
+                SDL_RenderCopy(renderer, backTexture, NULL, &Title_background_rect2);
+                SDL_RenderCopy(renderer, sprite1FallingTexture, NULL, &falling_rect);
+                SDL_RenderCopy(renderer, sprite1StraightTexture, NULL, &sprite1_rect);
+                SDL_RenderCopy(renderer, sprite2StraightTexture, NULL, &sprite2_rect);
+                SDL_RenderCopy(renderer, sprite3StraightTexture, NULL, &sprite3_rect);
+                SDL_RenderCopy(renderer, border, NULL, &border_rect);
+                SDL_RenderCopy(renderer, mainMenuTitleTexture, NULL, &Title_rect);
+                SDL_Rect MainMenu_rect = {startx, starty, 400, 50};
+                SDL_Rect pick_rect = {190, 290, 300, 40};
+                SDL_Rect enter_rect = {position + 6, 520, 150, 20};
+                if(add){//animates the 'start' text
+                    if(menuCounter == 4) {
+                        starty += 1;
+                        menuCounter = 0;
+                    }
+                }else{
+                    if(menuCounter == 4) {
+                        starty -= 1;
+                        menuCounter = 0;
+                    }
+                }
+                if(fall){//moves the falling character
+                    fally += 3;
+                }
+                if(position == 185) {//determines which sprite is going to be used
+                    sprite1 = true;
+                    sprite2 = false;
+                    sprite3 = false;
+                } else if (position == 385) {
+                    sprite1 = false;
+                    sprite2 = true;
+                    sprite3 = false;
+                } else if(position == 585){
+                    sprite1 = false;
+                    sprite2 = false;
+                    sprite3 = true;
+                }
+                SDL_RenderCopy(renderer, selectCharacterTexture, NULL, &pick_rect);
+                SDL_RenderCopy(renderer, mainMenuStartTexture, NULL, &MainMenu_rect);
+                SDL_RenderCopy(renderer, pressEnterTexture, NULL, &enter_rect);
+                SDL_RenderPresent(renderer);//draws the menu
+            }
+            
+            while(SDL_PollEvent(&event)) {
+                if(event.type == SDL_KEYDOWN){
+                    if(event.key.keysym.sym == SDLK_RETURN) {//look at current character
+                        main_menu_screen = false;
+                        if(main_menu_test == false){
+                            character_description = true;
+                        }
+                    }
+                    if(event.key.keysym.sym == SDLK_SPACE || event.key.keysym.sym == SDLK_RETURN){//start game
+                       if(main_menu_test == true){
+                           if(option == 0){
+                               main_menu_test = false;
+                               main_menu_screen = true;
+                           } else if(option == 1) {
+                               main_menu = false;
+                               leaderboard = true;
+                           } else if(option == 2) {
+                               about = true;
+                               main_menu_test = false;
+                           } else if(option == 3) exit(0);
+                       } else if (main_menu_screen){
+                           main_menu = false;
+                           first_loop = true;
+                       }
+                }
+                if(event.key.keysym.sym == SDLK_BACKSPACE) {//return from current character
+                    if(character_description){
+                        character_description = false;
+                        main_menu_screen = true;
+                    } else if (main_menu_screen || about){
+                        main_menu_screen = false;
+                        about = false;
+                        main_menu_test = true;
+                        option = 0;
+                    }
+                }
+                if(event.key.keysym.sym == SDLK_RIGHT) {//move between characters
+                    if(position != 585) {
+                        position += 200;
+                    }
+                }
+                if(event.key.keysym.sym == SDLK_LEFT) {//move between characters
+                    if(position != 185) {
+                        position -= 200;
+                    }
+                }
+                if(event.key.keysym.sym == SDLK_UP) {
+                    option--;
+                    if(option == -1){
+                        option = 3;
+                    }
+                }
+                if(event.key.keysym.sym == SDLK_DOWN) {
+                    option++;
+                    if(option == 4){
+                        option = 0;
+                    }
+                }
+            }
+            }
+        }else{
+            if(game_over == true){//if you lose
+                counterAdd = 45;
+                menuCounterGameOver += 2;
+                SDL_Color textColor = {2
